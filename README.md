@@ -1,5 +1,11 @@
 # BackendBagAirport
 
+
+#python3 -m venv venv
+#source venv/bin/activate
+
+#alembic upgrade head
+
 #Criar um arquivo .env: 
 STAGE=DEV
 DB_NAME=bagairport
