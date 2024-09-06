@@ -1,0 +1,9 @@
+.env*
+.env.local
+.idea/
+idea/
+.tmp/
+tmp/
+
+version/
+versions
