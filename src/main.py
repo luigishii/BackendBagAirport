@@ -1,3 +1,6 @@
+from datetime import datetime
+import logging
+import os
 from fastapi import FastAPI, Depends, HTTPException
 from src import crud, models, schemas
 from src.database import engine
@@ -7,6 +10,21 @@ from sqlalchemy.orm import Session
 
 # Cria o banco de dados
 models.Base.metadata.create_all(bind=engine)
+
+def setup_logging():
+    log_directory = 'logs'
+    if not os.path.exists(log_directory):
+        os.makedirs(log_directory)
+    log_file = os.path.join(log_directory, f'{datetime.now().strftime("%Y-%m-%d")}.log')
+
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
+    )
+
+setup_logging()
 
 app = FastAPI()
 
