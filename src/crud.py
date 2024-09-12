@@ -13,6 +13,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     logging.info(f"User created successfully with ID: {db_user.id}")
+    logging.error(f"Error in create user with ID : {db_user.id}")
     return db_user
 
 def get_user(user_id: int, db: Session):
