@@ -37,3 +37,4 @@ uvicorn src.main:app --reload
 
 Acessar a Documentação da API Abra o navegador e acesse o link:
 http://localhost:8000/docs
+
