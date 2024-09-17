@@ -5,6 +5,7 @@ log/
 logs/
 src_old/
 version/
+versions/
 
 
 # Arquivos gerados por navegadores
