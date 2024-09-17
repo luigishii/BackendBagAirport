@@ -1,4 +1,5 @@
 import logging
+from sqlite3 import IntegrityError
 from sqlalchemy.orm import Session
 from src import models, schemas
 from src.security import hash_password, verify_password
@@ -6,15 +7,30 @@ from fastapi import HTTPException, status
 
 def create_user(db: Session, user: schemas.UserCreate):
     logging.info(f"Attempting to create user with username: {user.username} and email: {user.email}")
-    db_user = models.User(username=user.username,
-                          email=user.email,
-                          hashed_password=hash_password(user.hashed_password))
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    logging.info(f"User created successfully with ID: {db_user.id}")
-    logging.error(f"Error in create user with ID : {db_user.id}")
-    return db_user
+    
+    try:
+        db_user = models.User(
+            username=user.username,
+            email=user.email,
+            cpf=user.cpf,  # Pode ser None ou uma string válida
+            hashed_password=hash_password(user.hashed_password)
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        logging.info(f"User created successfully with ID: {db_user.id}")
+        return db_user
+    except IntegrityError as e:
+        db.rollback()
+        logging.error(f"IntegrityError while creating user: {e}")
+        if 'unique constraint "ix_users_email"' in str(e):
+            raise HTTPException(status_code=400, detail="Email já está em uso.")
+        else:
+            raise HTTPException(status_code=500, detail="Erro ao criar usuário.")
+    except Exception as e:
+        db.rollback()
+        logging.error(f"Unexpected error while creating user: {e}")
+        raise HTTPException(status_code=500, detail="Erro inesperado ao criar usuário.")
 
 def get_user(user_id: int, db: Session):
     logging.info(f"Fetching user with ID: {user_id}")
