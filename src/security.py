@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session
 from src import models, schemas
 from passlib.context import CryptContext
+from fastapi.security import OAuth2PasswordBearer
+from src.database import get_db
+from fastapi import HTTPException,Depends,status
 
 # Configuração do contexto de hashing de senhas
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")

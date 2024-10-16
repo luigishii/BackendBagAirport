@@ -6,7 +6,6 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from dotenv import load_dotenv
 from src.database import Base  # Importa a Base de seus modelos
-from src.models import User
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()

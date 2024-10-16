@@ -2,22 +2,39 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 class UserBase(BaseModel):
-    username: str
+    nome: str
     email: str
-    cpf: str
-    hashed_password:str
+    telefone: str
+    senha:str
+    isAdmin: bool
     
 class UserCreate(UserBase):
-    username: str
-    email: str
-    cpf: Optional[str] = Field(None, description="Cadastro de Pessoa Física")
-    hashed_password:str
+    pass
 
 class UserUpdate(BaseModel):
     new_password: str
 
-class User(UserBase):
-    id: int
+class UserGet(BaseModel):
+    nome: str
+    email: str
+    telefone: str
+    isAdmin: bool
+
 
     class Config:
         orm_mode = True
+        
+        
+class MalaCreate(BaseModel):
+    idTag: int
+    descricaoTag: str
+    statusLocalizacao: str = None
+    verificacaoEntrega: bool = False
+    
+class Login(BaseModel):
+    username: str
+    password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
