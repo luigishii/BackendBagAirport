@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from src import schemas, models
+from src.models import schemas
 from src.database import get_db
 from passlib.context import CryptContext
 from jose import JWTError, jwt
-from datetime import datetime, timedelta  # Importando datetime e timedelta
+from datetime import datetime, timedelta
+
+from src.models import models  # Importando datetime e timedelta
 
 router = APIRouter()
 
@@ -27,5 +29,7 @@ def create_access_token(data: dict, expires_delta: int = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
 
 
