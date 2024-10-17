@@ -11,6 +11,9 @@ class Usuario(Base):
     telefone = Column(String, nullable=True)
     senha = Column(String, nullable=False)
     isAdmin = Column(Boolean, default=False)
+    
+    # Relacionamento com Mala
+    malas = relationship("Mala", back_populates="usuario")
 
 class LeitorRFID(Base):
     __tablename__ = 'leitor_rfid'
@@ -30,11 +33,13 @@ class Mala(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     idTag = Column(Integer, ForeignKey('tag_rfid.idTag'), nullable=False)
+    idUsuario = Column(Integer, ForeignKey('usuario.idUsuario'), nullable=False)  # Associa Mala ao Usuario
     descricaoTag = Column(String, nullable=False)
     statusLocalizacao = Column(String, nullable=True)
     verificacaoEntrega = Column(Boolean, default=False)
     
     tag_rfid = relationship("TagRFID")
+    usuario = relationship("Usuario", back_populates="malas")  # Relacionamento com Usuario
 
 # Tabela Viagem
 class Viagem(Base):
@@ -42,5 +47,3 @@ class Viagem(Base):
     
     idViagem = Column(Integer, primary_key=True, autoincrement=True)
     destino = Column(String, nullable=False)
-
-

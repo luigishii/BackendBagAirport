@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from requests import Session
 from src.models import schemas
 from src.crud import excluir_tag, is_admin_user
-from src.database.mala_repository import create_mala_function, excluir_mala
+from src.database.mala_repository import create_mala_function, excluir_mala, get_user_bags_history
 from src.database.db import get_db
 from sqlalchemy.exc import NoResultFound
 
@@ -59,3 +59,15 @@ def delete_mala(mala_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Mala com ID {mala_id} não encontrada.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+@app.get("/users/{user_id}/bags",tags=["mala"], response_model=list[schemas.Mala])
+def get_bags_history_by_user(user_id: int, db: Session = Depends(get_db)):
+    """
+    Rota para obter o histórico de malas de um usuário específico.
+    
+    :param user_id: ID do usuário.
+    :param db: Sessão do banco de dados.
+    :return: Lista com o histórico de malas do usuário.
+    """
+    return get_user_bags_history(user_id, db)

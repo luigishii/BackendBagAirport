@@ -1,8 +1,8 @@
+import logging
 from fastapi import HTTPException,status
 from requests import Session
 from src.models import schemas
 from src.models import models
-
 
 
 def create_mala_function(mala: schemas.MalaCreate, db: Session, current_user: models.Usuario):
@@ -16,20 +16,23 @@ def create_mala_function(mala: schemas.MalaCreate, db: Session, current_user: mo
     # Verifica se a tag já existe
     tag = db.query(models.TagRFID).filter(models.TagRFID.idTag == mala.idTag).first()
 
+    # Se a tag não existir, cria uma nova tag
     if tag is None:
-        # Cria uma nova tag se não existir
         nova_tag = models.TagRFID(
-            idTag=mala.idTag,  # Presumindo que idTag é o identificador único
             descricaoTag=mala.descricaoTag,  # Descrição da tag
             # Adicione outros campos conforme necessário
         )
         db.add(nova_tag)
         db.commit()
         db.refresh(nova_tag)
+        idTag = nova_tag.idTag  # Pega o idTag da nova tag criada
+    else:
+        idTag = tag.idTag  # Usa o idTag da tag existente
 
     # Agora, cria a mala
     nova_mala = models.Mala(
-        idTag=mala.idTag,  # Usa o idTag da tag criada ou existente
+        idTag=idTag,  # Usa o idTag da tag criada ou existente
+        idUsuario=current_user.idUsuario,  # Define o idUsuario do usuário atual
         descricaoTag=mala.descricaoTag,
         statusLocalizacao=mala.statusLocalizacao,
         verificacaoEntrega=mala.verificacaoEntrega
@@ -40,6 +43,7 @@ def create_mala_function(mala: schemas.MalaCreate, db: Session, current_user: mo
     db.refresh(nova_mala)
 
     return nova_mala
+
 
 
 def excluir_mala(session: Session, mala_id: int):
@@ -61,3 +65,36 @@ def excluir_mala(session: Session, mala_id: int):
     session.delete(mala)
     session.commit()
     return f"Mala com ID {mala_id} excluída com sucesso."
+
+def get_user_bags_history(user_id: int, db: Session) -> list[schemas.Mala]:
+    """
+    Função para obter o histórico de bags de um usuário.
+    
+    :param user_id: ID do usuário.
+    :param db: Sessão do banco de dados.
+    :return: Lista com o histórico de bags.
+    """
+    logging.info(f"Fetching bag history for user with ID: {user_id}")
+    
+    # Buscar o usuário no banco de dados
+    user = db.query(models.Usuario).filter(models.Usuario.idUsuario == user_id).first()
+    
+    if not user:
+        logging.warning(f"No user found with ID: {user_id}")
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    
+    # Buscar o histórico de bags associadas ao usuário
+    bags_history = db.query(models.Mala).filter(models.Mala.idUsuario == user_id).all()
+
+    if bags_history:
+        logging.info(f"Found {len(bags_history)} bags for user with ID: {user_id}")
+        return [schemas.Mala(
+            idBag=bag.idBag,
+            description=bag.description,
+            status=bag.status,
+            last_location=bag.last_location,
+            created_at=bag.created_at
+        ) for bag in bags_history]
+    else:
+        logging.warning(f"No bags found for user with ID: {user_id}")
+        return []

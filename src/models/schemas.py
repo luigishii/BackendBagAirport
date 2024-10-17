@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
 
@@ -24,6 +25,15 @@ class UserGet(BaseModel):
     class Config:
         orm_mode = True
         
+class Mala(BaseModel):
+    idMala: int
+    descricao: str
+    status: str
+    ultima_localizacao: str
+    data_criacao: datetime
+
+    class Config:
+        orm_mode = True
         
 class MalaCreate(BaseModel):
     idTag: int
