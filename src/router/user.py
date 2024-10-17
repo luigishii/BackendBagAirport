@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from requests import Session
 from src import crud
 from src.database.db import get_db
+from src.database.user_repository import get_all_users
 from src.models import models, schemas
 
 app = APIRouter()
@@ -21,3 +22,10 @@ def update_user(user_id: int, user_update: schemas.UserUpdate, db: Session = Dep
 @app.delete("/users/{user_id}",tags=["user"], response_model=dict)
 def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     return crud.delete_user(db=db, user_id=user_id)
+
+@app.get("/users",tags=["user"], response_model=list[schemas.UserGet])
+def list_all_users(db: Session = Depends(get_db)):
+    """
+    Rota para listar todos os usuários do banco de dados.
+    """
+    return get_all_users(db)

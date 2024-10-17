@@ -1,5 +1,6 @@
 import logging
 from sqlite3 import IntegrityError
+from typing import List
 from sqlalchemy.orm import Session
 from src.models import schemas
 from src.models import models
@@ -62,6 +63,24 @@ def get_user(user_id: int, db: Session) -> schemas.UserGet:
     else:
         logging.warning(f"No user found with ID: {user_id}")
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    
+def get_all_users(db: Session) -> List[schemas.UserGet]:
+    logging.info("Fetching all users")
+    users = db.query(models.Usuario).all()
+
+    if users:
+        logging.info(f"Found {len(users)} users")
+        return [schemas.UserGet(
+            id=user.idUsuario,
+            nome=user.nome,
+            email=user.email,
+            telefone=user.telefone,
+            isAdmin=user.isAdmin
+        ) for user in users]
+    else:
+        logging.warning("No users found")
+        raise HTTPException(status_code=404, detail="Nenhum usuário encontrado.")
+
 
 
 # Função para atualizar a senha de um usuário
