@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, requests
 from requests import Session
 from src import crud
 from src.database.db import get_db
-from src.database.user_repository import get_all_users
+from src.database.user_repository import  get_all_users, update_senha, update_user
 from src.models import models, schemas
-from src.database.user_repository import create_user,get_user,update_user,delete_user
+from src.database.user_repository import create_user,get_user,delete_user
 
 app = APIRouter()
 
@@ -16,9 +16,9 @@ def create_users(user: schemas.UserCreate, db: Session = Depends(get_db)):
 def read_user(user_id: int, db: Session = Depends(get_db)):
     return get_user(user_id, db=db)
 
-@app.put("/users/{user_id}" ,tags=["user"], response_model=schemas.UserBase)
-def update_user(user_id: int, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
-    return update_user(user_id, user_update.new_password, db)
+@app.put("/users/{user_id}/password" ,tags=["user"], response_model=schemas.UserBase)
+def update_password(user_id: int, user_update: schemas.UserUpdatePassword, db: Session = Depends(get_db)):
+    return update_senha(user_id, user_update.new_password, db)
 
 @app.delete("/users/{user_id}",tags=["user"], response_model=dict)
 def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
@@ -30,3 +30,10 @@ def list_all_users(db: Session = Depends(get_db)):
     Rota para listar todos os usuários do banco de dados.
     """
     return get_all_users(db)
+
+@app.put("/users/{user_id}", tags=["user"], response_model=schemas.UserBase)
+def update_user_route(user_id: int, user_data: schemas.UserUpdate, db: Session = Depends(get_db)):
+    """
+    Rota para atualizar os dados de um usuário.
+    """
+    return update_user(user_id, user_data, db)

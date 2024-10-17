@@ -68,33 +68,32 @@ def excluir_mala(session: Session, mala_id: int):
 
 def get_user_bags_history(user_id: int, db: Session) -> list[schemas.Mala]:
     """
-    Função para obter o histórico de bags de um usuário.
+    Função para obter o histórico de malas de um usuário.
     
     :param user_id: ID do usuário.
     :param db: Sessão do banco de dados.
-    :return: Lista com o histórico de bags.
+    :return: Lista com o histórico de malas.
     """
-    logging.info(f"Fetching bag history for user with ID: {user_id}")
+    logging.info(f"Buscando histórico de malas para o usuário com ID: {user_id}")
     
     # Buscar o usuário no banco de dados
     user = db.query(models.Usuario).filter(models.Usuario.idUsuario == user_id).first()
     
     if not user:
-        logging.warning(f"No user found with ID: {user_id}")
+        logging.warning(f"Nenhum usuário encontrado com ID: {user_id}")
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     
-    # Buscar o histórico de bags associadas ao usuário
+    # Buscar o histórico de malas associadas ao usuário
     bags_history = db.query(models.Mala).filter(models.Mala.idUsuario == user_id).all()
 
     if bags_history:
-        logging.info(f"Found {len(bags_history)} bags for user with ID: {user_id}")
+        logging.info(f"Foram encontradas {len(bags_history)} malas para o usuário com ID: {user_id}")
         return [schemas.Mala(
-            idBag=bag.idBag,
-            description=bag.description,
-            status=bag.status,
-            last_location=bag.last_location,
-            created_at=bag.created_at
+            idMala=bag.id,  # Usando o atributo correto do modelo
+            descricao=bag.descricaoTag,
+            status=bag.statusLocalizacao,
         ) for bag in bags_history]
     else:
-        logging.warning(f"No bags found for user with ID: {user_id}")
+        logging.warning(f"Nenhuma mala encontrada para o usuário com ID: {user_id}")
         return []
+

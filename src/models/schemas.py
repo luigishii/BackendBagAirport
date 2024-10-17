@@ -6,13 +6,21 @@ class UserBase(BaseModel):
     nome: str
     email: str
     telefone: str
-    senha:str
+    senha: Optional[str] = None
     isAdmin: bool
     
 class UserCreate(UserBase):
     pass
 
 class UserUpdate(BaseModel):
+    nome: str
+    email: str
+    telefone: str
+    senha: str | None = None  # Torne a senha opcional
+    isAdmin: bool
+
+    
+class UserUpdatePassword(BaseModel):
     new_password: str
 
 class UserGet(BaseModel):
@@ -29,8 +37,6 @@ class Mala(BaseModel):
     idMala: int
     descricao: str
     status: str
-    ultima_localizacao: str
-    data_criacao: datetime
 
     class Config:
         orm_mode = True
@@ -42,7 +48,7 @@ class MalaCreate(BaseModel):
     verificacaoEntrega: bool = False
     
 class Login(BaseModel):
-    username: str
+    email: str
     password: str
 
 class Token(BaseModel):

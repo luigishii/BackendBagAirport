@@ -84,7 +84,7 @@ def get_all_users(db: Session) -> List[schemas.UserGet]:
 
 
 # Função para atualizar a senha de um usuário
-def update_user(user_id: int, new_password: str, db: Session) -> schemas.UserBase:
+def update_senha(user_id: int, new_password: str, db: Session) -> schemas.UserBase:
     logging.info(f"Attempting to update password for user with ID: {user_id}")
     db_user = db.query(models.Usuario).filter(models.Usuario.idUsuario == user_id).first()
     if db_user:
@@ -116,4 +116,40 @@ def delete_user(db: Session, user_id: int):
         return {"detail": "Usuário deletado com sucesso."}  # Mensagem de confirmação
     else:
         logging.warning(f"No user found with ID: {user_id} to delete")
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    
+    
+    
+def update_user(user_id: int, user_data: schemas.UserUpdate, db: Session) -> schemas.UserBase:
+    logging.info(f"Attempting to update user with ID: {user_id}")
+    
+    # Busca o usuário no banco de dados
+    db_user = db.query(models.Usuario).filter(models.Usuario.idUsuario == user_id).first()
+    
+    if db_user:
+        # Atualiza os dados do usuário
+        db_user.nome = user_data.nome
+        db_user.email = user_data.email
+        db_user.telefone = user_data.telefone
+        
+        # Atualiza a senha apenas se uma nova senha for fornecida
+        if user_data.senha:  # Isso só funcionará se `senha` estiver no modelo
+            db_user.senha = hash_password(user_data.senha)  # Atualiza a senha com a versão hash
+        
+        db_user.isAdmin = user_data.isAdmin
+        
+        db.commit()  # Confirma a transação
+        db.refresh(db_user)  # Atualiza a instância do usuário
+        logging.info(f"User updated successfully with ID: {user_id}")
+
+        # Retorna uma nova instância de UserBase
+        return schemas.UserBase(
+            nome=db_user.nome,
+            email=db_user.email,
+            telefone=db_user.telefone,
+            senha=db_user.senha,  # Retorna a senha, mas considere não retornar senhas por motivos de segurança
+            isAdmin=db_user.isAdmin
+        )
+    else:
+        logging.warning(f"No user found with ID: {user_id} to update")
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")

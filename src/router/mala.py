@@ -71,3 +71,12 @@ def get_bags_history_by_user(user_id: int, db: Session = Depends(get_db)):
     :return: Lista com o histórico de malas do usuário.
     """
     return get_user_bags_history(user_id, db)
+
+@app.get("/bags")
+def get_all_bags(db: Session = Depends(get_db)):
+    bags = db.query(models.Mala).all()
+    
+    if not bags:
+        return {"message": "Nenhuma mala encontrada no banco de dados."}
+    
+    return bags
