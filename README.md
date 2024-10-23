@@ -37,7 +37,7 @@ alembic upgrade head
 Executar o Servidor Inicie o servidor de desenvolvimento:
 Copiar código:
 
-uvicorn src.main:app --reload
+uvicorn src.main:app --reload --port 5000
 
 Acessar a Documentação da API Abra o navegador e acesse o link:
 http://localhost:8000/docs
