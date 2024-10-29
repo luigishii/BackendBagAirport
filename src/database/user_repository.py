@@ -4,40 +4,43 @@ from typing import List
 from sqlalchemy.orm import Session
 from src.models import schemas
 from src.models import models
-from src.security import hash_password, verify_password
+from src.security import hash_password
 from fastapi import HTTPException, status
 
 
-# Função para criar um novo usuário
 def create_user(db: Session, user: schemas.UserCreate):
     logging.info(f"Attempting to create user with email: {user.email}")
     
     try:
+        # Verifica se role está presente, se não, define um padrão
+        role = user.role.lower() if hasattr(user, 'role') else 'traveler'
+
         # Cria um novo usuário com os dados fornecidos
         db_user = models.Usuario(
             nome=user.nome,
             email=user.email,
             telefone=user.telefone,
             senha=hash_password(user.senha),
-            isAdmin=user.isAdmin
+            isAdmin=user.isAdmin,
+            role=role  # Inclui o campo role
         )
         db.add(db_user)  # Adiciona o usuário no banco de dados
         db.commit()  # Confirma a transação
         db.refresh(db_user)  # Atualiza a instância do usuário
         logging.info(f"User created successfully with ID: {db_user.idUsuario}")
         
-        # Retorna um dicionário que corresponde ao modelo UserBase
         return schemas.UserBase(
             nome=db_user.nome,
             email=db_user.email,
             telefone=db_user.telefone,
             senha=db_user.senha,  
-            isAdmin=db_user.isAdmin
+            isAdmin=db_user.isAdmin,
+            role=db_user.role
         )
     except IntegrityError as e:
         db.rollback()  # Desfaz a transação em caso de erro
         logging.error(f"IntegrityError while creating user: {e}")
-        if 'unique constraint' in str(e):  # Verifica se o erro foi causado por violação de constraint única
+        if 'unique constraint' in str(e):
             raise HTTPException(status_code=400, detail="Email ou telefone já estão em uso.")
         else:
             raise HTTPException(status_code=500, detail="Erro ao criar usuário.")
@@ -45,6 +48,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         db.rollback()
         logging.error(f"Unexpected error while creating user: {e}")
         raise HTTPException(status_code=500, detail="Erro inesperado ao criar usuário.")
+
 
 
 def get_user(user_id: int, db: Session) -> schemas.UserGet:
@@ -58,7 +62,8 @@ def get_user(user_id: int, db: Session) -> schemas.UserGet:
             nome=user.nome,
             email=user.email,
             telefone=user.telefone,
-            isAdmin=user.isAdmin
+            isAdmin=user.isAdmin,
+            role=user.role
         )
     else:
         logging.warning(f"No user found with ID: {user_id}")
@@ -75,7 +80,8 @@ def get_all_users(db: Session) -> List[schemas.UserGet]:
             nome=user.nome,
             email=user.email,
             telefone=user.telefone,
-            isAdmin=user.isAdmin
+            isAdmin=user.isAdmin,
+            role=user.role
         ) for user in users]
     else:
         logging.warning("No users found")
@@ -99,7 +105,8 @@ def update_senha(user_id: int, new_password: str, db: Session) -> schemas.UserBa
             email=db_user.email,
             telefone=db_user.telefone,
             senha=db_user.senha,  
-            isAdmin=db_user.isAdmin
+            isAdmin=db_user.isAdmin,
+            role=db_user.role
         )
     else:
         logging.warning(f"No user found with ID: {user_id} to update")
@@ -137,7 +144,8 @@ def update_user(user_id: int, user_data: schemas.UserUpdate, db: Session) -> sch
             db_user.senha = hash_password(user_data.senha)  # Atualiza a senha com a versão hash
         
         db_user.isAdmin = user_data.isAdmin
-        
+        db_user.role = user_data.role
+                
         db.commit()  # Confirma a transação
         db.refresh(db_user)  # Atualiza a instância do usuário
         logging.info(f"User updated successfully with ID: {user_id}")
@@ -148,7 +156,8 @@ def update_user(user_id: int, user_data: schemas.UserUpdate, db: Session) -> sch
             email=db_user.email,
             telefone=db_user.telefone,
             senha=db_user.senha,  # Retorna a senha, mas considere não retornar senhas por motivos de segurança
-            isAdmin=db_user.isAdmin
+            isAdmin=db_user.isAdmin,
+            role=db_user.role
         )
     else:
         logging.warning(f"No user found with ID: {user_id} to update")

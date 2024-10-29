@@ -1,6 +1,13 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field
+from sqlalchemy import Enum
+
+class UserRole(str, Enum):
+    collaborator = "Collaborator"
+    admin = "Admin"
+    traveler = "Traveler"
+    other = "Other"
 
 class UserBase(BaseModel):
     nome: str
@@ -8,6 +15,7 @@ class UserBase(BaseModel):
     telefone: str
     senha: Optional[str] = None
     isAdmin: bool
+    role: UserRole
     
 class UserCreate(UserBase):
     pass
@@ -18,6 +26,7 @@ class UserUpdate(BaseModel):
     telefone: str
     senha: str | None = None  # Torne a senha opcional
     isAdmin: bool
+    role: UserRole
 
     
 class UserUpdatePassword(BaseModel):
@@ -28,6 +37,7 @@ class UserGet(BaseModel):
     email: str
     telefone: str
     isAdmin: bool
+    role: UserRole
 
 
     class Config:

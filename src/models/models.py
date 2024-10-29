@@ -1,6 +1,12 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Enum, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from src.models.base import Base
+
+class UserRoledb(str, Enum):
+    collaborator = "collaborator"
+    admin = "admin"
+    traveler = "traveler"
+    other = "other"
 
 class Usuario(Base):
     __tablename__ = 'usuario'
@@ -11,8 +17,9 @@ class Usuario(Base):
     telefone = Column(String, nullable=True)
     senha = Column(String, nullable=False)
     isAdmin = Column(Boolean, default=False)
+    # Usando uma tupla de strings diretamente no Enum do SQLAlchemy
+    role = Column(Enum("collaborator", "admin", "traveler", "other", name="userrole_enum"), nullable=False)
     
-    # Relacionamento com Mala
     malas = relationship("Mala", back_populates="usuario")
 
 class LeitorRFID(Base):
